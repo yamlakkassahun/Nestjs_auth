@@ -54,3 +54,27 @@ export class AuthCredentialSignInDto {
   })
   password: string;
 }
+
+
+export class AuthCredentialPasswordDto {
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(32)
+  @ApiProperty({ type: String, description: 'Password' }) // this will give the schema to the swagger api
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message:
+      'Passwords is weak.Password must contain upper case letter, lower case letter and number or special character',
+  })
+  oldPassword: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(32)
+  @ApiProperty({ type: String, description: 'Password' }) // this will give the schema to the swagger api
+  @Matches(/((?=.*\d)|(?=.*\W+))(?![.\n])(?=.*[A-Z])(?=.*[a-z]).*$/, {
+    message:
+      'Passwords is weak.Password must contain upper case letter, lower case letter and number or special character',
+  })
+  newPassword: string;
+}

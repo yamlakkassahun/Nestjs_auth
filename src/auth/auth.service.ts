@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -7,7 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/models/user.schema';
-import { AuthCredentialDto, AuthCredentialSignInDto } from './dto/auth.dto';
+import { AuthCredentialDto, AuthCredentialPasswordDto, AuthCredentialSignInDto } from './dto/auth.dto';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from './interface/payload.interface';
@@ -66,6 +67,38 @@ export class AuthService {
       return { accessToken };
     } else {
       throw new UnauthorizedException('Please Check you Login Credentials');
+    }
+  }
+
+  async AllAdmins(): Promise<User[]> {
+    try{
+      const user = await this.userModel.find({});
+      return user;
+    } catch(err) {
+      throw new HttpException('Sorry No Users Where Found!', 404);
+    }
+  }
+
+  async RemoveAdmin(id: string): Promise<any> {
+    try{
+      const result = await this.userModel.findByIdAndRemove(id);
+      return result;
+    } catch(err) {
+      throw new HttpException('Sorry No Users Where Found!', 404);
+    }
+  }
+
+  async PasswordUpdate(auth: User, authCredentialPasswordDto: AuthCredentialPasswordDto): Promise<any> {
+    const { oldPassword, newPassword } = authCredentialPasswordDto;
+    const email = auth.email;
+    const user = await this.userModel.findOne({ email });
+    if (user && (await bcrypt.compare(oldPassword, user.password))) {
+      const hashPassword = await bcrypt.hash(newPassword, user.salt);
+      user.password = hashPassword;
+      await user.save();
+      return 'password Changed Successfully'
+    } else {
+      throw new UnauthorizedException('Please Check you Credentials');
     }
   }
 }
